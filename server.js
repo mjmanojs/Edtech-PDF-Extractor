@@ -87,6 +87,18 @@ app.post('/api/start-browser', async (req, res) => {
     }
 });
 
+// Endpoint to cancel extraction
+app.post('/api/cancel-extraction', async (req, res) => {
+    try {
+        if (page) {
+            await page.evaluate(() => { window.__CANCEL_EXTRACTION__ = true; });
+        }
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 // Endpoint to capture PDF
 app.post('/api/capture-pdf', async (req, res) => {
     if (!browser || !page) {
@@ -156,6 +168,7 @@ app.post('/api/capture-pdf', async (req, res) => {
 
         // Strategy 2: Evaluate script on the active page to extract canvas or img data fallback
         const extractedPages = await page.evaluate(async () => {
+            window.__CANCEL_EXTRACTION__ = false;
             // Wait function
             const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
@@ -238,6 +251,7 @@ app.post('/api/capture-pdf', async (req, res) => {
                 if (container === window) {
                     let prevHeight = -1;
                     while (document.documentElement.scrollHeight > document.documentElement.scrollTop + window.innerHeight) {
+                        if (window.__CANCEL_EXTRACTION__) return { cancelled: true };
                         window.scrollBy(0, window.innerHeight / 1.5);
                         await delay(400); // Wait for lazy load
                         captureCanvases(); // Capture newly mounted ones
@@ -247,6 +261,7 @@ app.post('/api/capture-pdf', async (req, res) => {
                 } else {
                     let prevTop = -1;
                     while (container.scrollHeight > container.scrollTop + container.clientHeight) {
+                        if (window.__CANCEL_EXTRACTION__) return { cancelled: true };
                         container.scrollBy(0, container.clientHeight / 1.5);
                         await delay(400);
                         captureCanvases();
@@ -296,7 +311,11 @@ app.post('/api/capture-pdf', async (req, res) => {
             return pageImages;
         });
 
-        if (extractedPages.length === 0) {
+        if (extractedPages && extractedPages.cancelled) {
+            return res.status(200).json({ success: false, error: 'Extraction cancelled by user.' });
+        }
+
+        if (extractedPages && extractedPages.length === 0) {
             // Fallback: the site might render HTML elements. Let's just generate a PDF from the whole scrollable area via screenshotting.
             // Since we don't know the exact structure, we will capture full page screenshot or specific container screenshot
             // Or we just return an error and ask user to use another script

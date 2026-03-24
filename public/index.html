@@ -146,12 +146,10 @@
                 
                 if (data.success) {
                     if (data.method === 'pdfjs' && data.base64) {
-                        showStatus('Original PDF successfully extracted! Please review and save.', 'success');
+                        showStatus('Original PDF successfully extracted! Generating preview...', 'success');
                         globalPdfBase64 = data.base64;
                         filenameInput.value = data.title || 'Extracted_Lesson';
-                        previewArea.classList.remove('hidden');
-                        pdfIframe.classList.add('hidden');
-                        pdfIframe.src = '';
+                        renderPreviewAndSave();
                     } else if (data.pages && data.pages.length > 0) {
                         showStatus(`Successfully extracted ${data.pages.length} pages. Generating PDF file...`, 'info');
                         
@@ -185,12 +183,10 @@
                             
                             pdf.addImage(imgData, 'JPEG', x, y, width, height);
                         }
-                        showStatus('PDF successfully generated! Please review and save.', 'success');
+                        showStatus('PDF successfully generated! Generating preview...', 'success');
                         globalPdfBase64 = pdf.output('datauristring').split(',')[1];
                         filenameInput.value = data.title || 'Extracted_Lesson';
-                        previewArea.classList.remove('hidden');
-                        pdfIframe.classList.add('hidden');
-                        pdfIframe.src = '';
+                        renderPreviewAndSave();
                     } else {
                         showStatus('No pages found or extraction failed.', 'error');
                     }
@@ -205,16 +201,32 @@
             }
         });
 
-        btnPreviewPdf.addEventListener('click', () => {
-            if (globalPdfBase64) {
-                const binary = atob(globalPdfBase64);
-                const array = new Uint8Array(binary.length);
-                for(let i = 0; i < binary.length; i++) { array[i] = binary.charCodeAt(i); }
-                const blob = new Blob([array], {type: 'application/pdf'});
-                const blobUrl = URL.createObjectURL(blob);
-                pdfIframe.src = blobUrl;
-                pdfIframe.classList.remove('hidden');
+        function renderPreviewAndSave() {
+            previewArea.classList.remove('hidden');
+            
+            const binary = atob(globalPdfBase64);
+            const array = new Uint8Array(binary.length);
+            for(let i = 0; i < binary.length; i++) { array[i] = binary.charCodeAt(i); }
+            const blob = new Blob([array], {type: 'application/pdf'});
+            const blobUrl = URL.createObjectURL(blob);
+            pdfIframe.src = blobUrl;
+            pdfIframe.classList.remove('hidden');
+
+            if (autoSaveToggle.checked) {
+                manualSaveControls.classList.add('hidden');
+                btnSavePdf.click(); // trigger the auto save!
+            } else {
+                manualSaveControls.classList.remove('hidden');
+                manualSaveControls.classList.add('flex');
             }
+        }
+
+        btnCancel.addEventListener('click', async () => {
+            btnCancel.disabled = true;
+            btnCancel.innerHTML = 'Stopping...';
+            try {
+                await fetch('/api/cancel-extraction', { method: 'POST' });
+            } catch (e) {}
         });
 
         btnSavePdf.addEventListener('click', async () => {
