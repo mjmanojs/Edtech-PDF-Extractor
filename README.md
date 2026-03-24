@@ -1,6 +1,5 @@
 # EdTech PDF Extractor V1
 
-♥︎ **Sponsor**: [Support the development on BuyMeACoffee!](https://www.buymeacoffee.com/)
 
 𝕏 **Also, follow me on X**: [@SDummy1245](https://twitter.com/SDummy1245)
 
