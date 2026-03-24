@@ -1,11 +1,12 @@
 # EdTech PDF Extractor V1
 
-♥︎ **Sponsor**: [Your Sponsor Link / Info Here]
+♥︎ **Sponsor**: [Support the development on BuyMeACoffee!](https://www.buymeacoffee.com/)
 
-𝕏 **Also, follow me on X**: [@YourTwitterHandle](https://twitter.com/yourhandle)
+𝕏 **Also, follow me on X**: [@SDummy1245](https://twitter.com/SDummy1245)
 
+[![GitHub followers](https://img.shields.io/github/followers/mjmanojs?style=social)](https://github.com/mjmanojs)
 ![madewithlove](https://img.shields.io/badge/made%20with-%E2%9D%A4-red.svg)
-![GitHub license](https://img.shields.io/github/license/username/edtech-pdf-extractor)
+![GitHub license](https://img.shields.io/github/license/mjmanojs/Edtech-PDF-Extractor)
 
 An Application that automates the process of extracting, reconstructing, and downloading PDFs from highly restricted educational courses. EdTech PDF Extractor Version 1 is a robust suite designed to bypass sophisticated EdTech PDF viewers, outsmarting canvas-rendering and virtualization locks so you can finally download the courses you paid for.
 
@@ -28,7 +29,7 @@ If you would like to submit your own version/fork of the PDF Extractor, please o
 ## Installation
 
 ```bash
-git clone https://github.com/your-username/EdTech-PDF-Extractor.git
+git clone https://github.com/mjmanojs/Edtech-PDF-Extractor.git
 
 cd EdTech-PDF-Extractor
 
