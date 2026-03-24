@@ -1,14 +1,22 @@
 {
-  "name": "pdf-extractor",
+  "name": "edtech-pdf-extractor",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "An open source tool to extract protected course PDFs from EdTech platforms and virtual viewers.",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "edtech",
+    "pdf downloader",
+    "course scraper",
+    "pdf extractor",
+    "coaching notes",
+    "puppeteer",
+    "download pdf"
+  ],
+  "author": "Manoj (SDummy1245)",
+  "license": "AGPL-3.0",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
