@@ -6,7 +6,11 @@
         const scrollContainers = Array.from(document.querySelectorAll('div')).filter(el =>
             el.scrollHeight > el.clientHeight && getComputedStyle(el).overflowY !== 'hidden' && getComputedStyle(el).overflowY !== 'visible'
         );
-        const containersToScroll = [...scrollContainers, window];
+        let targetContainer = window;
+        if (scrollContainers.length > 0) {
+            targetContainer = scrollContainers.reduce((prev, current) => (prev.scrollHeight > current.scrollHeight) ? prev : current);
+        }
+        const containersToScroll = [targetContainer];
 
         for (const container of containersToScroll) {
             if (container === window) {
@@ -111,8 +115,14 @@
         }
 
         // Generate filename based on document title
-        const titleNode = document.querySelector('.css-tnrnu1, h1, h2');
-        let title = titleNode ? titleNode.innerText : document.title;
+        const titleNodes = document.querySelectorAll('.css-tnrnu1, h1, h2, h3, .lesson-title, .title, strong');
+        let title = document.title;
+        for (let node of titleNodes) {
+            if (node.innerText && node.innerText.trim().length > 0) {
+                title = node.innerText.trim();
+                break;
+            }
+        }
         if(!title || title.trim() === '') title = 'Extracted_Lesson';
         const safeTitle = title.replace(/[^a-zA-Z0-9 \-]/g, '_').replace(/_+/g, '_').trim();
         const filename = safeTitle + '.pdf';
