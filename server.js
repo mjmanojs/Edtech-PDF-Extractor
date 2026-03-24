@@ -100,7 +100,7 @@ app.post('/api/capture-pdf', async (req, res) => {
                 }
             }
             if(!title || title.trim() === '') title = 'Extracted_Lesson';
-            return title.replace(/[^a-zA-Z0-9 \-]/g, '_').replace(/_+/g, '_').trim();
+            return title.replace(/[^a-zA-Z0-9 \-&()\[\]_]/g, '_').replace(/_+/g, '_').trim();
         });
 
         // Strategy 1: Look for PDF.js instance across all frames (Advanced Extraction)

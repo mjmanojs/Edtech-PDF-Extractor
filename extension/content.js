@@ -124,7 +124,7 @@
             }
         }
         if(!title || title.trim() === '') title = 'Extracted_Lesson';
-        const safeTitle = title.replace(/[^a-zA-Z0-9 \-]/g, '_').replace(/_+/g, '_').trim();
+        const safeTitle = title.replace(/[^a-zA-Z0-9 \-&()\[\]_]/g, '_').replace(/_+/g, '_').trim();
         const filename = safeTitle + '.pdf';
 
         // Trigger download
