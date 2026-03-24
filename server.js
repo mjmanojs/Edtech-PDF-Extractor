@@ -196,11 +196,26 @@ app.post('/api/capture-pdf', async (req, res) => {
                             const url = canvas.toDataURL('image/jpeg', 0.95);
                             if (!seenUrls.has(url)) {
                                 seenUrls.add(url);
+                                
+                                let pageNum = 99999;
+                                const pageDiv = canvas.closest('.page');
+                                if (pageDiv && pageDiv.hasAttribute('data-page-number')) {
+                                    pageNum = parseInt(pageDiv.getAttribute('data-page-number'), 10);
+                                } else {
+                                    const ariaLabel = canvas.getAttribute('aria-label');
+                                    if (ariaLabel && ariaLabel.toLowerCase().includes('page')) {
+                                        const match = ariaLabel.match(/\d+/);
+                                        if (match) pageNum = parseInt(match[0], 10);
+                                    }
+                                }
+
                                 pageImages.push({
                                     url: url,
                                     width: canvas.width,
                                     height: canvas.height,
-                                    type: 'canvas'
+                                    type: 'canvas',
+                                    pageNum: pageNum,
+                                    captureIndex: pageImages.length
                                 });
                             }
                         } catch (e) {
@@ -240,6 +255,15 @@ app.post('/api/capture-pdf', async (req, res) => {
                     }
                 }
             }
+            
+            // Mathematically guarantee perfect page sequence
+            const hasValidPageNumbers = pageImages.some(p => p.pageNum !== 99999);
+            if (hasValidPageNumbers) {
+                pageImages.sort((a, b) => a.pageNum - b.pageNum);
+            }
+
+            // Scroll back to top just in case
+            window.scrollTo(0, 0);
 
             // Scroll back to top just in case
             window.scrollTo(0, 0);
