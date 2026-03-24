@@ -163,13 +163,27 @@ app.post('/api/capture-pdf', async (req, res) => {
             // Different websites have different scrollable containers.
             // Let's scroll the window as well as any scrollable internal divs.
 
-            const scrollContainers = Array.from(document.querySelectorAll('div')).filter(el =>
-                el.scrollHeight > el.clientHeight && getComputedStyle(el).overflowY !== 'hidden' && getComputedStyle(el).overflowY !== 'visible'
-            );
             let targetContainer = window;
-            if (scrollContainers.length > 0) {
-                targetContainer = scrollContainers.reduce((prev, current) => (prev.scrollHeight > current.scrollHeight) ? prev : current);
+            const pdfHint = document.querySelector('.pdfViewer, [class*="pdf"], canvas');
+            if (pdfHint) {
+                let curr = pdfHint;
+                while (curr && curr !== document.body && curr !== document.documentElement) {
+                    const style = getComputedStyle(curr);
+                    if (curr.scrollHeight > curr.clientHeight && (style.overflowY === 'auto' || style.overflowY === 'scroll')) {
+                        targetContainer = curr;
+                        break;
+                    }
+                    curr = curr.parentElement;
+                }
+            } else {
+                const scrollContainers = Array.from(document.querySelectorAll('div')).filter(el =>
+                    el.scrollHeight > el.clientHeight && getComputedStyle(el).overflowY !== 'hidden' && getComputedStyle(el).overflowY !== 'visible'
+                );
+                if (scrollContainers.length > 0) {
+                    targetContainer = scrollContainers.reduce((prev, current) => (prev.scrollHeight > current.scrollHeight) ? prev : current);
+                }
             }
+
             const containersToScroll = [targetContainer];
             let pageImages = [];
             let seenUrls = new Set();
@@ -197,7 +211,15 @@ app.post('/api/capture-pdf', async (req, res) => {
             };
 
             for (const container of containersToScroll) {
+                if (container === window) {
+                    window.scrollTo(0, 0);
+                } else {
+                    container.scrollTop = 0;
+                }
+                
+                await delay(1000); // Give DOM time to react to jumping to top
                 captureCanvases(); // Initial capture
+
                 if (container === window) {
                     let prevHeight = -1;
                     while (document.documentElement.scrollHeight > document.documentElement.scrollTop + window.innerHeight) {
