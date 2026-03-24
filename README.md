@@ -1,25 +1,67 @@
-# Universal EdTech PDF Extractor 🚀
+# EdTech PDF Extractor V1
 
-An open-source, robust suite of tools designed to extract protected, non-downloadable PDF lessons from EdTech platforms (like PDF.js viewers or Canvas-rendered documents) and download them natively as clean, perfectly-sequenced PDF files.
+♥︎ **Sponsor**: [Your Sponsor Link / Info Here]
+
+𝕏 **Also, follow me on X**: [@YourTwitterHandle](https://twitter.com/yourhandle)
+
+![madewithlove](https://img.shields.io/badge/made%20with-%E2%9D%A4-red.svg)
+![GitHub license](https://img.shields.io/github/license/username/edtech-pdf-extractor)
+
+An Application that automates the process of extracting, reconstructing, and downloading PDFs from highly restricted educational courses. EdTech PDF Extractor Version 1 is a robust suite designed to bypass sophisticated EdTech PDF viewers, outsmarting canvas-rendering and virtualization locks so you can finally download the courses you paid for.
+
+**Note**: EdTech PDF Extractor needs Node.js installed to function effectively for the background server, or a Chromium-based browser (Chrome, Edge, Opera GX) for the native extension.
 
 ## Features
-- **Dynamic Bypass**: Neutralizes lazy-loading / virtualized scrolling "tricks" by capturing canvases concurrently during a simulated scroll.
-- **Raw API Hooking**: Intercepts `window.PDFViewerApplication` memory directly from internal iframes to pull original, text-searchable PDFs without relying on image screenshots.
-- **Background Node.js Saver**: Bypasses browser download restrictions (like dropping `.pdf` extensions on large data URIs) by routing the extracted Base64 payloads directly to your local file system (`Downloads/extracted pdf/`).
-- **Dark Mode UI**: Sleek, clean TailwindCSS interface for easy operation.
-- **Universal Chrome Extension**: Included unpacked Chrome Extension (`/extension`) configured for `<all_urls>` so you don't even need the backend if you're already logged in via Opera GX or Chrome!
+- 📚 **Canvas Lazy-Loading Bypass** (Extracts virtualized pages continuously while scrolling)
+- 🔓 **Raw API Hooking** (Hooks directly into `window.PDFViewerApplication` memory space)
+- 💾 **Background Node Saver** (Bypasses Chrome restrictions by saving natively to `Downloads/extracted pdf/`)
+- 🌐 **Universal Extension Protocol** (Ships with an unpacked Chrome Extension to extract natively)
+- 🎨 **Dark Mode Interface** (Sleek TailwindCSS local web dashboard)
 
-## Quick Start (Node.js Server)
-1. Clone this repository.
-2. Run `npm install`
-3. Start the server: `node server.js`
-4. Visit `http://localhost:3000`
-5. Paste your target lesson URL and click **Launch Browser**.
-6. Once the Puppeteer instance launches, log in if required.
-7. Click **Extract & Download PDF**. Your PDF will be elegantly assembled and dropped directly into your `Downloads` directory!
+## Versions
+EdTech PDF Extractor has two distinct versions included in this repository:
+1. **Node.js Puppeteer Server** (The primary automated bypass engine)
+2. **Native Chrome Extension** (Located in the `/extension` directory)
 
-## Manual Extension Installation
-If you prefer not to use the Puppeteer Node server, simply install the `/extension` folder directly into Chrome, Edge, or Opera GX via `chrome://extensions` (Developer Mode -> Load Unpacked). 
+If you would like to submit your own version/fork of the PDF Extractor, please open an issue describing the changes you made to the fork.
 
----
-_Disclaimer: Built for educational archiving and accessibility purposes. Respect copyright restrictions of the platforms you browse._
+## Installation
+
+```bash
+git clone https://github.com/your-username/EdTech-PDF-Extractor.git
+
+cd EdTech-PDF-Extractor
+
+# Install the Node.js requirements
+npm install
+```
+
+## Usage
+
+```bash
+# Run the application server
+node server.js
+```
+Then, open your web browser and navigate to `http://localhost:3000` to launch the dashboard.
+
+## Documentation
+All relevant documentation regarding the Chrome extension setup can be performed simply by loading the unpacked `/extension` folder in your browser's Developer Options.
+
+## Scripts
+For easier usage, there is an `Install-Extension.bat` script that can be used to set up the Chrome extension environment directly on Windows machines without the need for manual file transfers.
+
+## Contributing
+Please read `CONTRIBUTING.md` for details on our code of conduct, and the process for submitting pull requests to us. 
+
+## Code of Conduct
+Please read `CODE_OF_CONDUCT.md` for details on our code of conduct, and the process for submitting pull requests to us.
+
+## License
+EdTech PDF Extractor is licensed under Affero General Public License v3.0. See `LICENSE` for more information.
+
+## Acknowledgments
+- pdf.js internals
+- jsPDF 
+
+## Disclaimer
+This project is for educational purposes only. The author will not be responsible for any misuse of the information provided. All the information on this website/repository is published in good faith and for general information purpose only. The author does not make any warranties about the completeness, reliability, and accuracy of this information. Any action you take upon the information you find in this repository, is strictly at your own risk. The author will not be liable for any losses and/or damages in connection with the use of this project. Respect the copyright restrictions of the platforms you browse.
