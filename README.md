@@ -45,7 +45,9 @@ Then, open your web browser and navigate to `http://localhost:3000` to launch yo
 <summary><b>View Chrome Extension Details (Advanced API)</b></summary>
 
 Alternatively, the `/extension` folder contains a standalone Chrome Extension. You can install it natively by loading the unpacked folder in your browser's Developer Options. For Windows users, `Install-Extension.bat` automates this workspace setup.
-</details>## Contributing
+</details>
+
+## Contributing
 Please read `CONTRIBUTING.md` for details on our code of conduct, and the process for submitting pull requests to us. 
 
 ## Code of Conduct
