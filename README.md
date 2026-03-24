@@ -25,32 +25,27 @@ EdTech PDF Extractor has two distinct versions included in this repository:
 
 If you would like to submit your own version/fork of the PDF Extractor, please open an issue describing the changes you made to the fork.
 
-## Installation
+## 🚀 Quick Start (Local Setup)
+
+*The recommended approach to run the extractor completely securely on your local machine without needing cloud hosting or extension stores.*
 
 ```bash
 git clone https://github.com/mjmanojs/Edtech-PDF-Extractor.git
-
 cd EdTech-PDF-Extractor
 
 # Install the Node.js requirements
 npm install
-```
 
-## Usage
-
-```bash
-# Run the application server
+# Run the local application server
 node server.js
 ```
-Then, open your web browser and navigate to `http://localhost:3000` to launch the dashboard.
+Then, open your web browser and navigate to `http://localhost:3000` to launch your private extraction dashboard.
 
-## Documentation
-All relevant documentation regarding the Chrome extension setup can be performed simply by loading the unpacked `/extension` folder in your browser's Developer Options.
+<details>
+<summary><b>View Chrome Extension Details (Advanced API)</b></summary>
 
-## Scripts
-For easier usage, there is an `Install-Extension.bat` script that can be used to set up the Chrome extension environment directly on Windows machines without the need for manual file transfers.
-
-## Contributing
+Alternatively, the `/extension` folder contains a standalone Chrome Extension. You can install it natively by loading the unpacked folder in your browser's Developer Options. For Windows users, `Install-Extension.bat` automates this workspace setup.
+</details>## Contributing
 Please read `CONTRIBUTING.md` for details on our code of conduct, and the process for submitting pull requests to us. 
 
 ## Code of Conduct
