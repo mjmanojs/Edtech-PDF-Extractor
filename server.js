@@ -91,9 +91,10 @@ app.post('/api/capture-pdf', async (req, res) => {
 
     try {
         const pageTitle = await page.evaluate(() => {
-            let title = document.querySelector('h1')?.innerText || document.title;
+            const titleNode = document.querySelector('.css-tnrnu1, h1, h2');
+            let title = titleNode ? titleNode.innerText : document.title;
             if(!title || title.trim() === '') title = 'Extracted_Lesson';
-            return title.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+            return title.replace(/[^a-zA-Z0-9 \-]/g, '_').replace(/_+/g, '_').trim();
         });
 
         // Strategy 1: Look for PDF.js instance across all frames (Advanced Extraction)

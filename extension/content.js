@@ -111,8 +111,10 @@
         }
 
         // Generate filename based on document title
-        let safeTitle = document.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        if (!safeTitle) safeTitle = 'extracted_lesson';
+        const titleNode = document.querySelector('.css-tnrnu1, h1, h2');
+        let title = titleNode ? titleNode.innerText : document.title;
+        if(!title || title.trim() === '') title = 'Extracted_Lesson';
+        const safeTitle = title.replace(/[^a-zA-Z0-9 \-]/g, '_').replace(/_+/g, '_').trim();
         const filename = safeTitle + '.pdf';
 
         // Trigger download
