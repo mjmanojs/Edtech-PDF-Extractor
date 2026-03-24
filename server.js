@@ -12,8 +12,8 @@ const PORT = 3000;
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '150mb' }));
-app.use(express.urlencoded({ limit: '150mb', extended: true }));
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 app.post('/api/save-pdf', (req, res) => {
     try {
@@ -57,7 +57,11 @@ app.post('/api/start-browser', async (req, res) => {
                 headless: false,
                 defaultViewport: null, // Full HD or max resolution
                 userDataDir: path.join(__dirname, 'browser_profile'), // Re-use session cookies
-                args: ['--start-maximized']
+                args: [
+                    '--start-maximized',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins,site-per-process'
+                ]
             });
             const pages = await browser.pages();
             page = pages.length > 0 ? pages[0] : await browser.newPage();
@@ -90,18 +94,32 @@ app.post('/api/capture-pdf', async (req, res) => {
     }
 
     try {
-        const pageTitle = await page.evaluate(() => {
-            const titleNodes = document.querySelectorAll('.css-tnrnu1, h1, h2, h3, .lesson-title, .title, strong');
-            let title = document.title;
-            for (let node of titleNodes) {
-                if (node.innerText && node.innerText.trim().length > 0) {
-                    title = node.innerText.trim();
+        let pageTitle = '';
+        for (const frame of page.frames()) {
+            try {
+                const frameTitle = await frame.evaluate(() => {
+                    const titleNodes = document.querySelectorAll('.css-tnrnu1, h1, h2, h3, .lesson-title, .title, strong');
+                    if (titleNodes) {
+                        for (let node of titleNodes) {
+                            if (node.innerText && node.innerText.trim().length > 0) {
+                                return node.innerText.trim();
+                            }
+                        }
+                    }
+                    if (document.title && document.title.trim().length > 0) {
+                        return document.title.trim();
+                    }
+                    return null;
+                });
+                if (frameTitle) {
+                    pageTitle = frameTitle.replace(/[^a-zA-Z0-9 \-&()\[\]_]/g, '_').replace(/_+/g, '_').trim();
                     break;
                 }
+            } catch (e) {
+                // Safely ignore cross-origin DOM wrapper errors
             }
-            if(!title || title.trim() === '') title = 'Extracted_Lesson';
-            return title.replace(/[^a-zA-Z0-9 \-&()\[\]_]/g, '_').replace(/_+/g, '_').trim();
-        });
+        }
+        if(!pageTitle || pageTitle === '') pageTitle = 'Extracted_Lesson';
 
         // Strategy 1: Look for PDF.js instance across all frames (Advanced Extraction)
         let extractedRawPdf = null;
