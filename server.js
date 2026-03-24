@@ -17,7 +17,7 @@ app.use(express.urlencoded({ limit: '150mb', extended: true }));
 
 app.post('/api/save-pdf', (req, res) => {
     try {
-        const { base64Data } = req.body;
+        const { base64Data, title } = req.body;
         if (!base64Data) {
             return res.status(400).json({ success: false, error: 'No PDF data provided.' });
         }
@@ -27,17 +27,18 @@ app.post('/api/save-pdf', (req, res) => {
             fs.mkdirSync(downloadsDir, { recursive: true });
         }
 
+        let baseName = title || 'lesson_notes';
+        let filePath = path.join(downloadsDir, `${baseName}.pdf`);
         let fileIndex = 1;
-        let filePath = path.join(downloadsDir, `notes${fileIndex}.pdf`);
         while (fs.existsSync(filePath)) {
+            filePath = path.join(downloadsDir, `${baseName}_${fileIndex}.pdf`);
             fileIndex++;
-            filePath = path.join(downloadsDir, `notes${fileIndex}.pdf`);
         }
 
         let binaryData = Buffer.from(base64Data, 'base64');
         fs.writeFileSync(filePath, binaryData);
 
-        res.json({ success: true, filePath: filePath, fileName: `notes${fileIndex}.pdf` });
+        res.json({ success: true, filePath: filePath, fileName: path.basename(filePath) });
     } catch (error) {
         console.error('Error saving PDF:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -89,6 +90,12 @@ app.post('/api/capture-pdf', async (req, res) => {
     }
 
     try {
+        const pageTitle = await page.evaluate(() => {
+            let title = document.querySelector('h1')?.innerText || document.title;
+            if(!title || title.trim() === '') title = 'Extracted_Lesson';
+            return title.replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+        });
+
         // Strategy 1: Look for PDF.js instance across all frames (Advanced Extraction)
         let extractedRawPdf = null;
         for (const frame of page.frames()) {
@@ -119,7 +126,7 @@ app.post('/api/capture-pdf', async (req, res) => {
         }
 
         if (extractedRawPdf) {
-            return res.json({ success: true, method: 'pdfjs', base64: extractedRawPdf });
+            return res.json({ success: true, method: 'pdfjs', base64: extractedRawPdf, title: pageTitle });
         }
 
         // Strategy 2: Evaluate script on the active page to extract canvas or img data fallback
@@ -222,7 +229,7 @@ app.post('/api/capture-pdf', async (req, res) => {
         }
 
         // Return the extracted base64 images so the frontend can build the PDF
-        res.json({ success: true, method: 'canvas', pages: extractedPages });
+        res.json({ success: true, method: 'canvas', pages: extractedPages, title: pageTitle });
 
     } catch (error) {
         console.error('Error capturing PDF:', error);

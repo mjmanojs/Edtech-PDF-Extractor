@@ -119,7 +119,7 @@
                         const saveRes = await fetch('/api/save-pdf', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ base64Data: data.base64 })
+                            body: JSON.stringify({ base64Data: data.base64, title: data.title })
                         });
                         const saveData = await saveRes.json();
                         if (saveData.success) {
@@ -165,7 +165,7 @@
                         const saveRes = await fetch('/api/save-pdf', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ base64Data: base64Pdf })
+                            body: JSON.stringify({ base64Data: base64Pdf, title: data.title })
                         });
                         const saveData = await saveRes.json();
                         if (saveData.success) {
