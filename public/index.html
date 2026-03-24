@@ -52,6 +52,30 @@
             </div>
 
             <div id="statusArea" class="mt-6 p-4 rounded-lg hidden text-sm font-medium"></div>
+
+            <div id="previewArea" class="hidden mt-6 p-5 bg-gray-800 rounded-lg border border-gray-700 shadow-lg">
+                <h3 class="text-sm font-semibold text-gray-300 mb-2">Extraction Complete</h3>
+                <p class="text-xs text-gray-400 mb-4">Review your generated file name and optionally preview the PDF before saving it.</p>
+                
+                <div class="mb-4">
+                    <label class="block text-xs text-gray-400 mb-1">File Name</label>
+                    <div class="flex">
+                        <input type="text" id="filenameInput" class="flex-1 px-3 py-2 bg-gray-900 border border-gray-700 rounded-l-md text-white text-sm focus:outline-none focus:border-blue-500">
+                        <span class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-700 bg-gray-800 text-gray-400 text-sm">.pdf</span>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3 mb-4">
+                    <button id="btnPreviewPdf" class="flex-1 bg-gray-700 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm border border-gray-600">
+                        🔍 Preview PDF
+                    </button>
+                    <button id="btnSavePdf" class="flex-1 bg-green-600 hover:bg-green-500 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm font-bold shadow-lg">
+                        💾 Save to Downloads
+                    </button>
+                </div>
+                
+                <iframe id="pdfIframe" class="w-full h-96 hidden border border-gray-700 rounded bg-gray-900"></iframe>
+            </div>
         </div>
     </div>
 
@@ -59,6 +83,13 @@
         const btnLaunch = document.getElementById('btnLaunch');
         const btnExtract = document.getElementById('btnExtract');
         const statusArea = document.getElementById('statusArea');
+        const previewArea = document.getElementById('previewArea');
+        const filenameInput = document.getElementById('filenameInput');
+        const btnPreviewPdf = document.getElementById('btnPreviewPdf');
+        const btnSavePdf = document.getElementById('btnSavePdf');
+        const pdfIframe = document.getElementById('pdfIframe');
+        
+        let globalPdfBase64 = null;
 
         function showStatus(message, type = 'info') {
             statusArea.className = 'mt-6 p-4 rounded-lg text-sm font-medium transition-all shadow-inner';
@@ -115,18 +146,12 @@
                 
                 if (data.success) {
                     if (data.method === 'pdfjs' && data.base64) {
-                        showStatus('Original PDF found! Saving directly to your Downloads folder...', 'info');
-                        const saveRes = await fetch('/api/save-pdf', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ base64Data: data.base64, title: data.title })
-                        });
-                        const saveData = await saveRes.json();
-                        if (saveData.success) {
-                            showStatus(`Success! Saved automatically as ${saveData.fileName} in your Downloads/extracted pdf folder!`, 'success');
-                        } else {
-                            showStatus('Failed to save PDF: ' + saveData.error, 'error');
-                        }
+                        showStatus('Original PDF successfully extracted! Please review and save.', 'success');
+                        globalPdfBase64 = data.base64;
+                        filenameInput.value = data.title || 'Extracted_Lesson';
+                        previewArea.classList.remove('hidden');
+                        pdfIframe.classList.add('hidden');
+                        pdfIframe.src = '';
                     } else if (data.pages && data.pages.length > 0) {
                         showStatus(`Successfully extracted ${data.pages.length} pages. Generating PDF file...`, 'info');
                         
@@ -160,19 +185,12 @@
                             
                             pdf.addImage(imgData, 'JPEG', x, y, width, height);
                         }
-                        showStatus('PDF generated! Saving directly to your Downloads folder...', 'info');
-                        const base64Pdf = pdf.output('datauristring').split(',')[1];
-                        const saveRes = await fetch('/api/save-pdf', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ base64Data: base64Pdf, title: data.title })
-                        });
-                        const saveData = await saveRes.json();
-                        if (saveData.success) {
-                            showStatus(`Success! Saved automatically as ${saveData.fileName} in your Downloads/extracted pdf folder!`, 'success');
-                        } else {
-                            showStatus('Failed to save PDF: ' + saveData.error, 'error');
-                        }
+                        showStatus('PDF successfully generated! Please review and save.', 'success');
+                        globalPdfBase64 = pdf.output('datauristring').split(',')[1];
+                        filenameInput.value = data.title || 'Extracted_Lesson';
+                        previewArea.classList.remove('hidden');
+                        pdfIframe.classList.add('hidden');
+                        pdfIframe.src = '';
                     } else {
                         showStatus('No pages found or extraction failed.', 'error');
                     }
@@ -184,6 +202,47 @@
             } finally {
                 btnExtract.disabled = false;
                 btnExtract.innerHTML = originalContent;
+            }
+        });
+
+        btnPreviewPdf.addEventListener('click', () => {
+            if (globalPdfBase64) {
+                const binary = atob(globalPdfBase64);
+                const array = new Uint8Array(binary.length);
+                for(let i = 0; i < binary.length; i++) { array[i] = binary.charCodeAt(i); }
+                const blob = new Blob([array], {type: 'application/pdf'});
+                const blobUrl = URL.createObjectURL(blob);
+                pdfIframe.src = blobUrl;
+                pdfIframe.classList.remove('hidden');
+            }
+        });
+
+        btnSavePdf.addEventListener('click', async () => {
+            if (!globalPdfBase64) return;
+            
+            const rawName = filenameInput.value.trim() || 'Extracted_Lesson';
+            btnSavePdf.disabled = true;
+            btnSavePdf.textContent = 'Saving...';
+            
+            try {
+                const saveRes = await fetch('/api/save-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ base64Data: globalPdfBase64, title: rawName })
+                });
+                const saveData = await saveRes.json();
+                
+                if (saveData.success) {
+                    showStatus(`Success! Saved automatically as ${saveData.fileName} in your Downloads/extracted pdf folder!`, 'success');
+                    previewArea.classList.add('hidden');
+                } else {
+                    showStatus('Failed to save PDF: ' + saveData.error, 'error');
+                }
+            } catch(e) {
+                showStatus('Network error while saving: ' + e.message, 'error');
+            } finally {
+                btnSavePdf.disabled = false;
+                btnSavePdf.innerHTML = '💾 Save to Downloads';
             }
         });
     </script>
