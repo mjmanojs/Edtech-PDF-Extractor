@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "EdTech PDF Extractor",
+    "version": "1.0",
+    "description": "Extracts non-downloadable PDF pages from learn.iplus.guru and saves as a single PDF.",
+    "permissions": [
+        "activeTab",
+        "scripting"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "host_permissions": [
+        "<all_urls>"
+    ]
+}
