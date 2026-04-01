@@ -321,10 +321,13 @@
                             doc.addPage([pageWidth, pageHeight]);
                             doc.setPage(pageNumber);
                         }
-                        
-                        // STRICT LOSSLESS OUTPUT: 'image/png' preserves the exact canvas bits!
-                        const imgData = canvas.toDataURL('image/png');
-                        doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, null, 'NONE');
+                        // DYNAMIC HARDWARE-ENCODED FALLBACK:
+                        // While 'image/png' is technically mathematically lossless, embedding Uncompressed PNGs > 10 Megapixels 
+                        // explicitly crashes the browser's heap via Maximum Call Stack Size Exceeded.
+                        // We safely shift to Chrome's C++ JPEG matrix at 100% maximum Quality (1.0), 
+                        // preserving pristine visual clarity whilst skipping JS-based image array deflating logic!
+                        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                        doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, null, 'NONE');
                         
                         // AGGRESSIVE MEMORY CLEANUP
                         page.cleanup();
