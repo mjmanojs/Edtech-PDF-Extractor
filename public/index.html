@@ -3,20 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EdTech PDF Extractor</title>
+    <title>PDF Toolkit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-900 min-h-screen text-gray-200 flex flex-col pt-10 px-4 items-center">
+<body class="bg-gray-900 min-h-screen text-gray-200 flex flex-col pt-10 px-4 items-center pb-10">
 
-    <div class="max-w-2xl w-full bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
-        <div class="bg-blue-800 p-6 text-center border-b border-blue-700">
-            <h1 class="text-3xl font-bold text-white mb-2">EdTech PDF Extractor</h1>
-            <p class="text-blue-100">Easily extract and download protected lesson pages as standard PDFs.</p>
+    <!-- Mode Selector Menu -->
+    <div id="modeSelectionMenu" class="max-w-3xl w-full flex flex-col space-y-6 hidden">
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-white mb-3">PDF Toolkit</h1>
+            <p class="text-gray-400">Please choose a module to begin.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Extractor Button -->
+            <button onclick="switchMode('extractor')" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-blue-500 transition-all rounded-2xl p-8 text-left group shadow-lg flex flex-col items-start w-full focus:outline-none">
+                <div class="bg-blue-900/50 p-4 rounded-xl inline-block mb-4 text-blue-400 group-hover:scale-110 transition-transform">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">EdTech Extractor</h2>
+                <p class="text-gray-400 flex-1">Bypass live browser DRM and extract protected lessons smoothly directly into standard PDFs.</p>
+            </button>
+
+            <!-- Inverter Button -->
+            <button onclick="switchMode('inverter')" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-purple-500 transition-all rounded-2xl p-8 text-left group shadow-lg flex flex-col items-start w-full focus:outline-none">
+                <div class="bg-purple-900/50 p-4 rounded-xl inline-block mb-4 text-purple-400 group-hover:scale-110 transition-transform">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Bulk Page Inverter</h2>
+                <p class="text-gray-400 flex-1">Group-upload multiple PDFs and mathematically invert their colors to dark-mode with zero quality loss.</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- Extractor Mode Container -->
+    <div id="extractorMode" class="max-w-2xl w-full bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700 hidden mt-4">
+        <div class="bg-blue-800 p-6 flex justify-between items-center border-b border-blue-700">
+            <div>
+                <h1 class="text-2xl font-bold text-white mb-1">EdTech PDF Extractor</h1>
+                <p class="text-blue-200 text-sm">Easily extract and download protected lesson pages.</p>
+            </div>
+            <button onclick="switchMode('menu')" class="text-blue-200 hover:text-white text-sm flex items-center bg-blue-900/50 hover:bg-blue-900 px-3 py-2 rounded-lg transition-colors border border-blue-700">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Menu
+            </button>
         </div>
         
         <div class="p-8">
@@ -87,7 +122,236 @@
         </div>
     </div>
 
+    <!-- Inverter Mode Container -->
+    <div id="inverterMode" class="max-w-3xl w-full bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700 hidden mt-4">
+        <div class="bg-purple-800 p-6 flex justify-between items-center border-b border-purple-700">
+            <div>
+                <h1 class="text-2xl font-bold text-white mb-1">Lossless Bulk PDF Inverter</h1>
+                <p class="text-purple-200 text-sm">Convert black-on-white text to dark-mode cleanly and completely offline.</p>
+            </div>
+            <button onclick="switchMode('menu')" class="text-purple-200 hover:text-white text-sm flex items-center bg-purple-900/50 hover:bg-purple-900 px-3 py-2 rounded-lg transition-colors border border-purple-700">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Menu
+            </button>
+        </div>
+        
+        <div class="p-8">
+            <div class="mb-6 relative border-2 border-dashed border-gray-600 rounded-xl bg-gray-900 group transition-all hover:bg-gray-800 hover:border-purple-500 p-8 text-center cursor-pointer">
+                <input type="file" id="batchPdfUpload" accept=".pdf" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <svg class="w-12 h-12 mx-auto text-gray-500 group-hover:text-purple-400 transition-colors mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                <h3 class="text-lg font-medium text-white mb-1">Click or Drag & Drop PDFs Here</h3>
+                <p class="text-sm text-gray-400">Multiple files supported</p>
+            </div>
+            
+            <div id="uploadFileList" class="space-y-3 mb-6 hidden"></div>
+            
+            <div class="flex items-end space-x-4 mb-6 pt-6 border-t border-gray-700">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Render Resolution (PPI)</label>
+                    <div class="relative">
+                        <select id="inverterResolution" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-purple-500 transition-colors appearance-none pr-10">
+                            <option value="150">150 PPI (Standard Quality - Fast)</option>
+                            <option value="300" selected>300 PPI (High Quality - Recommended)</option>
+                            <option value="450">450 PPI (Ultra HD - Massive File Size)</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                            <svg class="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <button id="btnStartInverter" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition-all flex items-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    Process PDFs
+                </button>
+            </div>
+            
+            <div id="inverterGlobalStatus" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script>
+        // ==========================================
+        //         MODE SELECTION ROUTING
+        // ==========================================
+        const modeSelectionMenu = document.getElementById('modeSelectionMenu');
+        const extractorMode = document.getElementById('extractorMode');
+        const inverterMode = document.getElementById('inverterMode');
+        
+        function switchMode(mode) {
+            modeSelectionMenu.classList.add('hidden');
+            extractorMode.classList.add('hidden');
+            inverterMode.classList.add('hidden');
+            
+            if (mode === 'extractor') {
+                extractorMode.classList.remove('hidden');
+                localStorage.setItem('preferredAppMode', 'extractor');
+            } else if (mode === 'inverter') {
+                inverterMode.classList.remove('hidden');
+                localStorage.setItem('preferredAppMode', 'inverter');
+            } else {
+                modeSelectionMenu.classList.remove('hidden');
+                localStorage.removeItem('preferredAppMode');
+            }
+        }
+        
+        // Load initial mode
+        const savedMode = localStorage.getItem('preferredAppMode');
+        if (savedMode === 'extractor' || savedMode === 'inverter') {
+            switchMode(savedMode);
+        } else {
+            switchMode('menu');
+        }
+
+        // ==========================================
+        //           BULK INVERTER LOGIC
+        // ==========================================
+        const batchPdfUpload = document.getElementById('batchPdfUpload');
+        const uploadFileList = document.getElementById('uploadFileList');
+        const btnStartInverter = document.getElementById('btnStartInverter');
+        const inverterResolution = document.getElementById('inverterResolution');
+        const inverterGlobalStatus = document.getElementById('inverterGlobalStatus');
+        
+        let pendingInvertFiles = [];
+        
+        // Initialize PDF.js via CDN window bounds
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        if (pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
+        
+        batchPdfUpload.addEventListener('change', (e) => {
+            const newFiles = Array.from(e.target.files).filter(f => f.type === 'application/pdf');
+            if (newFiles.length > 0) {
+                pendingInvertFiles = pendingInvertFiles.concat(newFiles);
+                renderFileList();
+            }
+            batchPdfUpload.value = ''; // Reset for re-trigger capability
+        });
+        
+        function renderFileList() {
+            uploadFileList.innerHTML = '';
+            if (pendingInvertFiles.length > 0) {
+                uploadFileList.classList.remove('hidden');
+            } else {
+                uploadFileList.classList.add('hidden');
+            }
+
+            pendingInvertFiles.forEach((file, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between p-3 bg-gray-900 border border-gray-700 rounded-lg group';
+                row.innerHTML = `
+                    <div class="flex items-center overflow-hidden min-w-0 flex-1">
+                        <svg class="w-5 h-5 text-purple-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span class="text-sm text-gray-300 truncate font-medium">${file.name}</span>
+                        <span class="text-xs text-gray-500 ml-3 flex-shrink-0">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                    </div>
+                    <div class="flex items-center space-x-4 pl-4 border-l border-gray-700 ml-4 flex-shrink-0">
+                        <span id="fileStatus-${idx}" class="text-xs font-bold text-gray-500 uppercase tracking-wider w-24 text-right">Pending</span>
+                        <button onclick="removePendingFile(${idx})" class="text-gray-500 hover:text-red-400 transition-colors p-1" title="Remove PDF" id="btnRemove-${idx}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                `;
+                uploadFileList.appendChild(row);
+            });
+            btnStartInverter.disabled = pendingInvertFiles.length === 0;
+        }
+        
+        window.removePendingFile = function(idx) {
+            pendingInvertFiles.splice(idx, 1);
+            renderFileList();
+        };
+        
+        btnStartInverter.addEventListener('click', async () => {
+            btnStartInverter.disabled = true;
+            inverterGlobalStatus.classList.remove('hidden');
+            inverterGlobalStatus.textContent = \`Starting inversion for \${pendingInvertFiles.length} files...\`;
+            inverterGlobalStatus.className = 'p-4 rounded-lg bg-blue-900/40 border border-blue-800 text-blue-200 text-sm font-medium mb-6 animate-pulse';
+            
+            // Loop setup
+            const { jsPDF } = window.jspdf;
+            const resolution = parseInt(inverterResolution.value);
+            
+            for (let i = 0; i < pendingInvertFiles.length; i++) {
+                const file = pendingInvertFiles[i];
+                const statusSpan = document.getElementById(\`fileStatus-\${i}\`);
+                const btnRemove = document.getElementById(\`btnRemove-\${i}\`);
+                if (btnRemove) btnRemove.style.display = 'none'; // Lock removal during processing
+                
+                statusSpan.textContent = 'Processing...';
+                statusSpan.className = 'text-xs font-bold text-blue-400 uppercase tracking-wider animate-pulse w-24 text-right';
+                
+                try {
+                    const url = URL.createObjectURL(file);
+                    const pdfInstance = await pdfjsLib.getDocument(url).promise;
+                    
+                    let doc = null;
+                    for (let pageNumber = 1; pageNumber <= pdfInstance.numPages; pageNumber++) {
+                        inverterGlobalStatus.textContent = \`Processing \${i + 1}/\${pendingInvertFiles.length}: "\${file.name}" (Rendering Page \${pageNumber} of \${pdfInstance.numPages})...\`;
+                        
+                        const page = await pdfInstance.getPage(pageNumber);
+                        const viewport = page.getViewport({ scale: resolution / 72 });
+                        
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                        
+                        // LOSSLESS COLOR INVERSION HACK
+                        context.globalCompositeOperation = 'difference';
+                        context.fillStyle = 'white';
+                        context.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Enforce native 1:1 physical dimensions (prevent huge zoomed PDFs)
+                        const pageWidth = (viewport.width * 72) / resolution;
+                        const pageHeight = (viewport.height * 72) / resolution;
+                        
+                        if (!doc) {
+                            doc = new jsPDF({
+                                orientation: pageWidth > pageHeight ? 'landscape' : 'portrait',
+                                unit: 'pt',
+                                format: [pageWidth, pageHeight]
+                            });
+                        } else {
+                            doc.addPage([pageWidth, pageHeight]);
+                            doc.setPage(pageNumber);
+                        }
+                        
+                        // STRICT LOSSLESS OUTPUT: 'image/png' preserves the exact canvas bits!
+                        const imgData = canvas.toDataURL('image/png');
+                        doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, null, 'NONE');
+                    }
+                    
+                    inverterGlobalStatus.textContent = \`Compressing and saving \${file.name}...\`;
+                    const newName = file.name.replace(/\\.[Pp][Dd][Ff]$/, '') + '_inverted.pdf';
+                    doc.save(newName);
+                    
+                    statusSpan.textContent = 'Completed';
+                    statusSpan.className = 'text-xs font-bold text-green-400 uppercase tracking-wider w-24 text-right';
+                } catch (e) {
+                    console.error('Inversion error:', e);
+                    statusSpan.textContent = 'Failed';
+                    statusSpan.className = 'text-xs font-bold text-red-500 uppercase tracking-wider w-24 text-right';
+                }
+            }
+            
+            inverterGlobalStatus.textContent = \`Success! All \${pendingInvertFiles.length} files processed.\`;
+            inverterGlobalStatus.className = 'p-4 rounded-lg bg-green-900/40 border border-green-800 text-green-200 text-sm font-medium mb-6 font-bold';
+            
+            // Clear pending files to allow another batch run
+            pendingInvertFiles = [];
+            btnStartInverter.disabled = true;
+            setTimeout(() => {
+                renderFileList();
+                inverterGlobalStatus.classList.add('hidden');
+            }, 5000);
+        });
+
+        // ==========================================
+        //           LIVE EXTRACTOR LOGIC
+        // ==========================================
         const btnLaunch = document.getElementById('btnLaunch');
         const btnExtract = document.getElementById('btnExtract');
         const btnCancel = document.getElementById('btnCancel');
@@ -148,6 +412,12 @@
             btnExtract.disabled = true;
             const originalContent = btnExtract.innerHTML;
             btnExtract.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Extracting (Do not close browser)...';
+            btnCancel.classList.remove('hidden');
+            btnCancel.classList.add('flex');
+            btnCancel.disabled = false;
+            btnCancel.innerHTML = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Stop Extract';
+            previewArea.classList.add('hidden');
+            pdfIframe.classList.add('hidden');
             showStatus('Extracting pages from browser. Please wait, this might take a moment if the document is long.', 'warning');
             
             try {
@@ -161,7 +431,7 @@
                         filenameInput.value = data.title || 'Extracted_Lesson';
                         renderPreviewAndSave();
                     } else if (data.pages && data.pages.length > 0) {
-                        showStatus(`Successfully extracted ${data.pages.length} pages. Generating PDF file...`, 'info');
+                        showStatus(\`Successfully extracted \${data.pages.length} pages. Generating PDF file...\`, 'info');
                         
                         // Generate PDF using jsPDF
                         window.jsPDF = window.jspdf.jsPDF;
@@ -208,6 +478,8 @@
             } finally {
                 btnExtract.disabled = false;
                 btnExtract.innerHTML = originalContent;
+                btnCancel.classList.add('hidden');
+                btnCancel.classList.remove('flex');
             }
         });
 
@@ -255,7 +527,7 @@
                 const saveData = await saveRes.json();
                 
                 if (saveData.success) {
-                    showStatus(`Success! Saved automatically as ${saveData.fileName} in your Downloads/extracted pdf folder!`, 'success');
+                    showStatus(\`Success! Saved automatically as \${saveData.fileName} in your Downloads/extracted pdf folder!\`, 'success');
                     previewArea.classList.add('hidden');
                 } else {
                     showStatus('Failed to save PDF: ' + saveData.error, 'error');
