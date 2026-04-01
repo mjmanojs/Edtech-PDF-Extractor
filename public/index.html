@@ -265,7 +265,7 @@
         btnStartInverter.addEventListener('click', async () => {
             btnStartInverter.disabled = true;
             inverterGlobalStatus.classList.remove('hidden');
-            inverterGlobalStatus.textContent = \`Starting inversion for \${pendingInvertFiles.length} files...\`;
+            inverterGlobalStatus.textContent = `Starting inversion for ${pendingInvertFiles.length} files...`;
             inverterGlobalStatus.className = 'p-4 rounded-lg bg-blue-900/40 border border-blue-800 text-blue-200 text-sm font-medium mb-6 animate-pulse';
             
             // Loop setup
@@ -274,8 +274,8 @@
             
             for (let i = 0; i < pendingInvertFiles.length; i++) {
                 const file = pendingInvertFiles[i];
-                const statusSpan = document.getElementById(\`fileStatus-\${i}\`);
-                const btnRemove = document.getElementById(\`btnRemove-\${i}\`);
+                const statusSpan = document.getElementById(`fileStatus-${i}`);
+                const btnRemove = document.getElementById(`btnRemove-${i}`);
                 if (btnRemove) btnRemove.style.display = 'none'; // Lock removal during processing
                 
                 statusSpan.textContent = 'Processing...';
@@ -287,7 +287,7 @@
                     
                     let doc = null;
                     for (let pageNumber = 1; pageNumber <= pdfInstance.numPages; pageNumber++) {
-                        inverterGlobalStatus.textContent = \`Processing \${i + 1}/\${pendingInvertFiles.length}: "\${file.name}" (Rendering Page \${pageNumber} of \${pdfInstance.numPages})...\`;
+                        inverterGlobalStatus.textContent = `Processing ${i + 1}/${pendingInvertFiles.length}: "${file.name}" (Rendering Page ${pageNumber} of ${pdfInstance.numPages})...`;
                         
                         const page = await pdfInstance.getPage(pageNumber);
                         const viewport = page.getViewport({ scale: resolution / 72 });
@@ -324,7 +324,7 @@
                         doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, null, 'NONE');
                     }
                     
-                    inverterGlobalStatus.textContent = \`Compressing and saving \${file.name}...\`;
+                    inverterGlobalStatus.textContent = `Compressing and saving ${file.name}...`;
                     const newName = file.name.replace(/\\.[Pp][Dd][Ff]$/, '') + '_inverted.pdf';
                     doc.save(newName);
                     
@@ -337,7 +337,7 @@
                 }
             }
             
-            inverterGlobalStatus.textContent = \`Success! All \${pendingInvertFiles.length} files processed.\`;
+            inverterGlobalStatus.textContent = `Success! All ${pendingInvertFiles.length} files processed.`;
             inverterGlobalStatus.className = 'p-4 rounded-lg bg-green-900/40 border border-green-800 text-green-200 text-sm font-medium mb-6 font-bold';
             
             // Clear pending files to allow another batch run
@@ -431,7 +431,7 @@
                         filenameInput.value = data.title || 'Extracted_Lesson';
                         renderPreviewAndSave();
                     } else if (data.pages && data.pages.length > 0) {
-                        showStatus(\`Successfully extracted \${data.pages.length} pages. Generating PDF file...\`, 'info');
+                        showStatus(`Successfully extracted ${data.pages.length} pages. Generating PDF file...`, 'info');
                         
                         // Generate PDF using jsPDF
                         window.jsPDF = window.jspdf.jsPDF;
@@ -527,7 +527,7 @@
                 const saveData = await saveRes.json();
                 
                 if (saveData.success) {
-                    showStatus(\`Success! Saved automatically as \${saveData.fileName} in your Downloads/extracted pdf folder!\`, 'success');
+                    showStatus(`Success! Saved automatically as ${saveData.fileName} in your Downloads/extracted pdf folder!`, 'success');
                     previewArea.classList.add('hidden');
                 } else {
                     showStatus('Failed to save PDF: ' + saveData.error, 'error');
