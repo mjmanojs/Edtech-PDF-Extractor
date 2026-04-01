@@ -223,8 +223,7 @@
             const newFiles = Array.from(e.target.files).filter(f => f.type === 'application/pdf');
             if (newFiles.length > 0) {
                 pendingInvertFiles = pendingInvertFiles.concat(newFiles);
-                // Dynamically enforce alphabetical / numerical sorting every time new files hit the queue
-                pendingInvertFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+                // Respect native OS selection / drag-and-drop sequencing (no forced sorting per user request)
                 renderFileList();
             }
             batchPdfUpload.value = ''; // Reset for re-trigger capability
