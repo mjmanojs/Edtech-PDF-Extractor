@@ -223,6 +223,8 @@
             const newFiles = Array.from(e.target.files).filter(f => f.type === 'application/pdf');
             if (newFiles.length > 0) {
                 pendingInvertFiles = pendingInvertFiles.concat(newFiles);
+                // Dynamically enforce alphabetical / numerical sorting every time new files hit the queue
+                pendingInvertFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
                 renderFileList();
             }
             batchPdfUpload.value = ''; // Reset for re-trigger capability
@@ -336,32 +338,72 @@
                     }
                     
                     inverterGlobalStatus.textContent = `Compressing and saving ${file.name}...`;
-                    const newName = file.name.replace(/\.[Pp][Dd][Ff]$/, '') + '_inverted.pdf';
-                    doc.save(newName);
+                    const rawName = file.name.replace(/\.[Pp][Dd][Ff]$/, '');
                     
-                    statusSpan.textContent = 'Completed';
-                    statusSpan.className = 'text-xs font-bold text-green-400 uppercase tracking-wider w-24 text-right';
+                    // Instead of browser doc.save which fails or dumps indiscriminately:
+                    // We pipe the pdf stream directly to the local node runtime server.
+                    // This forces it into our perfectly organized "inverted pdf" backend folder!
+                    const outputBase64 = doc.output('datauristring').split(',')[1];
+                    
+                    const saveRes = await fetch('/api/save-inverted-pdf', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ base64Data: outputBase64, title: rawName })
+                    });
+                    
+                    const saveData = await saveRes.json();
+                    
+                    if (saveData.success) {
+                        statusSpan.textContent = 'Completed';
+                        statusSpan.className = 'text-xs font-bold text-green-400 uppercase tracking-wider w-24 text-right';
+                    } else {
+                        throw new Error(saveData.error || 'Unknown Error While Saving');
+                    }
                 } catch (e) {
                     console.error('Inversion error:', e);
                     statusSpan.textContent = 'Failed';
                     statusSpan.className = 'text-xs font-bold text-red-500 uppercase tracking-wider w-24 text-right';
                     inverterGlobalStatus.textContent = `Error on ${file.name}: ${e.message || String(e)}`;
                     inverterGlobalStatus.className = 'p-4 rounded-lg bg-red-900/40 border border-red-800 text-red-200 text-sm font-medium mb-6 font-bold';
-                    btnStartInverter.disabled = false;
-                    return; // abort the batch loop
+                    continue; // Skip the failed file immediately and silently proceed to the next upload natively!
                 }
             }
             
-            inverterGlobalStatus.textContent = `Success! All ${pendingInvertFiles.length} files processed.`;
-            inverterGlobalStatus.className = 'p-4 rounded-lg bg-green-900/40 border border-green-800 text-green-200 text-sm font-medium mb-6 font-bold';
+            // Examine outcomes
+            const failedCount = Array.from(document.querySelectorAll('[id^="fileStatus-"]')).filter(el => el.textContent === 'Failed').length;
             
-            // Clear pending files to allow another batch run
-            pendingInvertFiles = [];
-            btnStartInverter.disabled = true;
-            setTimeout(() => {
-                renderFileList();
-                inverterGlobalStatus.classList.add('hidden');
-            }, 5000);
+            if (failedCount === 0) {
+                inverterGlobalStatus.textContent = `Success! All ${pendingInvertFiles.length} files processed cleanly.`;
+                inverterGlobalStatus.className = 'p-4 rounded-lg bg-green-900/40 border border-green-800 text-green-200 text-sm font-medium mb-6 font-bold';
+                
+                // Clear pending files to allow another batch run
+                pendingInvertFiles = [];
+                btnStartInverter.disabled = true;
+                setTimeout(() => {
+                    renderFileList();
+                    inverterGlobalStatus.classList.add('hidden');
+                    btnStartInverter.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg> Process PDFs`;
+                }, 5000);
+            } else {
+                inverterGlobalStatus.textContent = `Batch logic finalized gracefully, but ${failedCount} files threw internal memory failures and were skipped.`;
+                inverterGlobalStatus.className = 'p-4 rounded-lg bg-yellow-900/40 border border-yellow-800 text-yellow-200 text-sm font-medium mb-6 font-bold animate-pulse';
+                
+                // Truncate out ONLY the files that succeeded, retaining the failed items for a secondary trigger attempt
+                const retainedFiles = [];
+                for (let i = 0; i < pendingInvertFiles.length; i++) {
+                    const stat = document.getElementById(`fileStatus-${i}`);
+                    if (stat && stat.textContent === 'Failed') {
+                        retainedFiles.push(pendingInvertFiles[i]);
+                    }
+                }
+                pendingInvertFiles = retainedFiles;
+                
+                setTimeout(() => {
+                    renderFileList();
+                    btnStartInverter.disabled = false;
+                    btnStartInverter.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Retry Failed`;
+                }, 4000);
+            }
         });
 
         // ==========================================

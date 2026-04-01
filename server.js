@@ -12,8 +12,8 @@ const PORT = 3000;
 
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '500mb' }));
-app.use(express.urlencoded({ limit: '500mb', extended: true }));
+app.use(express.json({ limit: '50000mb' }));
+app.use(express.urlencoded({ limit: '50000mb', extended: true }));
 
 app.post('/api/save-pdf', (req, res) => {
     try {
@@ -41,6 +41,36 @@ app.post('/api/save-pdf', (req, res) => {
         res.json({ success: true, filePath: filePath, fileName: path.basename(filePath) });
     } catch (error) {
         console.error('Error saving PDF:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/save-inverted-pdf', (req, res) => {
+    try {
+        const { base64Data, title } = req.body;
+        if (!base64Data) {
+            return res.status(400).json({ success: false, error: 'No PDF data provided.' });
+        }
+
+        const downloadsDir = 'C:\\Users\\manoj\\Downloads\\inverted pdf';
+        if (!fs.existsSync(downloadsDir)) {
+            fs.mkdirSync(downloadsDir, { recursive: true });
+        }
+
+        let baseName = (title || 'inverted_lesson') + '_inverted';
+        let filePath = path.join(downloadsDir, `${baseName}.pdf`);
+        let fileIndex = 1;
+        while (fs.existsSync(filePath)) {
+            filePath = path.join(downloadsDir, `${baseName}_${fileIndex}.pdf`);
+            fileIndex++;
+        }
+
+        let binaryData = Buffer.from(base64Data, 'base64');
+        fs.writeFileSync(filePath, binaryData);
+
+        res.json({ success: true, filePath: filePath, fileName: path.basename(filePath) });
+    } catch (error) {
+        console.error('Error saving Inverted PDF:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
