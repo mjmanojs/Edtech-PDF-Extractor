@@ -299,6 +299,9 @@
                         
                         await page.render({ canvasContext: context, viewport: viewport }).promise;
                         
+                        // Yield to main thread so UI updates, and give JS engine a GC window
+                        await new Promise(r => setTimeout(r, 50));
+                        
                         // LOSSLESS COLOR INVERSION HACK
                         context.globalCompositeOperation = 'difference';
                         context.fillStyle = 'white';
@@ -322,10 +325,15 @@
                         // STRICT LOSSLESS OUTPUT: 'image/png' preserves the exact canvas bits!
                         const imgData = canvas.toDataURL('image/png');
                         doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, null, 'NONE');
+                        
+                        // AGGRESSIVE MEMORY CLEANUP
+                        page.cleanup();
+                        canvas.width = 0;
+                        canvas.height = 0;
                     }
                     
                     inverterGlobalStatus.textContent = `Compressing and saving ${file.name}...`;
-                    const newName = file.name.replace(/\\.[Pp][Dd][Ff]$/, '') + '_inverted.pdf';
+                    const newName = file.name.replace(/\.[Pp][Dd][Ff]$/, '') + '_inverted.pdf';
                     doc.save(newName);
                     
                     statusSpan.textContent = 'Completed';
@@ -334,6 +342,10 @@
                     console.error('Inversion error:', e);
                     statusSpan.textContent = 'Failed';
                     statusSpan.className = 'text-xs font-bold text-red-500 uppercase tracking-wider w-24 text-right';
+                    inverterGlobalStatus.textContent = `Error on ${file.name}: ${e.message || String(e)}`;
+                    inverterGlobalStatus.className = 'p-4 rounded-lg bg-red-900/40 border border-red-800 text-red-200 text-sm font-medium mb-6 font-bold';
+                    btnStartInverter.disabled = false;
+                    return; // abort the batch loop
                 }
             }
             
