@@ -337,7 +337,9 @@
                     }
                     
                     inverterGlobalStatus.textContent = `Compressing and saving ${file.name}...`;
-                    const rawName = file.name.replace(/\.[Pp][Dd][Ff]$/, '');
+                    // Inject an explicit numerical metadata marker natively onto the filename for perfect Window Folder Sorting
+                    const queuePosition = String(i + 1).padStart(2, '0');
+                    const rawName = `[${queuePosition}] ` + file.name.replace(/\.[Pp][Dd][Ff]$/, '');
                     
                     // Instead of browser doc.save which fails or dumps indiscriminately:
                     // We pipe the pdf stream directly to the local node runtime server.
