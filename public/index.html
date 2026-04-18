@@ -142,6 +142,17 @@
                 <p class="text-sm text-gray-400">Multiple files supported</p>
             </div>
             
+            <div id="totalPageCounterBox" class="hidden flex justify-between items-center mb-4 p-4 bg-gray-800 border border-gray-700 rounded-lg shadow-lg">
+                <span class="text-gray-300 font-semibold flex items-center">
+                    <svg class="w-5 h-5 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Total Pages in Queue
+                </span>
+                <div class="flex items-center space-x-3">
+                    <span id="pageCountStatus" class="text-xs font-medium text-purple-400 animate-pulse hidden">Extrapolating...</span>
+                    <span id="pageCountDisplay" class="text-2xl font-bold text-white tracking-wider">0</span>
+                </div>
+            </div>
+            
             <div id="uploadFileList" class="space-y-3 mb-6 hidden"></div>
             
             <div class="flex items-end space-x-4 mb-6 pt-6 border-t border-gray-700">
@@ -225,6 +236,7 @@
                 pendingInvertFiles = pendingInvertFiles.concat(newFiles);
                 // Respect native OS selection / drag-and-drop sequencing (no forced sorting per user request)
                 renderFileList();
+                calculateTotalPages();
             }
             batchPdfUpload.value = ''; // Reset for re-trigger capability
         });
@@ -261,7 +273,44 @@
         window.removePendingFile = function(idx) {
             pendingInvertFiles.splice(idx, 1);
             renderFileList();
+            calculateTotalPages();
         };
+        
+        async function calculateTotalPages() {
+            const counterBox = document.getElementById('totalPageCounterBox');
+            const statusNode = document.getElementById('pageCountStatus');
+            const displayNode = document.getElementById('pageCountDisplay');
+            
+            if (pendingInvertFiles.length === 0) {
+                counterBox.classList.add('hidden');
+                return;
+            }
+            
+            counterBox.classList.remove('hidden');
+            counterBox.classList.add('flex');
+            statusNode.classList.remove('hidden');
+            btnStartInverter.disabled = true; // Lock process button until parsing completes
+            
+            let total = 0;
+            
+            for (let file of pendingInvertFiles) {
+                if (file.customNumPages === undefined) {
+                    try {
+                        const url = URL.createObjectURL(file);
+                        const pdfInstance = await pdfjsLib.getDocument(url).promise;
+                        file.customNumPages = pdfInstance.numPages;
+                    } catch (err) {
+                        file.customNumPages = 0;
+                    }
+                }
+                total += file.customNumPages;
+            }
+            
+            displayNode.textContent = total;
+            statusNode.classList.add('hidden');
+            // Re-enable start if there are valid mapped files
+            btnStartInverter.disabled = false;
+        }
         
         btnStartInverter.addEventListener('click', async () => {
             btnStartInverter.disabled = true;
@@ -382,6 +431,7 @@
                 btnStartInverter.disabled = true;
                 setTimeout(() => {
                     renderFileList();
+                    calculateTotalPages();
                     inverterGlobalStatus.classList.add('hidden');
                     btnStartInverter.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg> Process PDFs`;
                 }, 5000);
@@ -401,6 +451,7 @@
                 
                 setTimeout(() => {
                     renderFileList();
+                    calculateTotalPages();
                     btnStartInverter.disabled = false;
                     btnStartInverter.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Retry Failed`;
                 }, 4000);
